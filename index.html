@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerçekçi Dijital Zarf ve Sürpriz Kağıt</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #B0E0E6;
+        overflow: hidden;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    /* Arka Plan Çiçek Görselleri */
+    .bg-flowers {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .flower-img {
+        position: absolute;
+        width: 350px;
+        height: 350px;
+        /* Görselin tam dosya adı buraya eklendi. Aynı klasörde olmaları şarttır. */
+        background-image: url('assets/suluboya-mor-cicek-buketi-koleksiyonu_65186-3398.avif');
+        background-repeat: no-repeat;
+        mix-blend-mode: multiply; 
+        opacity: 0.9;
+    }
+
+    /* Görselden farklı buketlerin kadrajlanması */
+    .flower-1 {
+        background-size: 250%;
+        background-position: 0% 30%; 
+        top: -5%; left: -5%;
+        transform: rotate(15deg);
+    }
+
+    .flower-2 {
+        background-size: 200%;
+        background-position: 50% 10%; 
+        bottom: -5%; right: -5%;
+        transform: rotate(-15deg);
+    }
+
+    .flower-3 {
+        background-size: 280%;
+        background-position: 100% 70%; 
+        top: 10%; right: 10%;
+        transform: rotate(25deg);
+        opacity: 0.7;
+    }
+
+    /* Ana Sahne (Zarf) */
+    .scene {
+        width: 340px;
+        height: 220px;
+        perspective: 1200px;
+        z-index: 10;
+    }
+
+    .envelope-wrapper {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        cursor: pointer;
+        transform: rotateX(15deg) rotateY(-20deg);
+        transition: transform 0.1s ease-out; 
+    }
+
+    /* Zarf Katmanları */
+    .env-base {
+        position: absolute;
+        width: 100%; height: 100%;
+        background: linear-gradient(135deg, #153c60, #0d263e);
+        border-radius: 5px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        transform: translateZ(-2px);
+    }
+
+    .flap-common { position: absolute; transform-style: preserve-3d; }
+
+    .env-left {
+        width: 55%; height: 100%;
+        background: linear-gradient(to right, #1f5f99, #2571b5);
+        clip-path: polygon(0 0, 100% 50%, 0 100%);
+        left: 0; transform: translateZ(1px);
+    }
+
+    .env-right {
+        width: 55%; height: 100%;
+        background: linear-gradient(to left, #1f5f99, #2571b5);
+        clip-path: polygon(100% 0, 0 50%, 100% 100%);
+        right: 0; transform: translateZ(1px);
+    }
+
+    .env-bottom {
+        width: 100%; height: 65%;
+        background: linear-gradient(to top, #2980b9, #2e8fcf);
+        clip-path: polygon(0 100%, 50% 0, 100% 100%);
+        bottom: 0; transform: translateZ(2px);
+        border-bottom: 2px solid #1a5276; 
+    }
+
+    /* ZARF KAPAĞI - Kapanma Sırası Düzeltildi */
+    .env-top {
+        width: 100%; height: 60%;
+        background: linear-gradient(to bottom, #3498db, #2980b9);
+        clip-path: polygon(0 0, 100% 0, 50% 100%);
+        top: 0; transform-origin: top;
+        transform: translateZ(3px) rotateX(0deg);
+        /* Kapanırken (default): Önce kağıdın girmesini (0.6s) bekler */
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.6s, z-index 0.6s;
+        z-index: 5;
+        border-top: 2px solid #5dade2;
+    }
+
+    .envelope-wrapper.open .env-top {
+        /* Açılırken: Bekleme olmadan anında açılır (0s) */
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+        transform: translateZ(0px) rotateX(180deg);
+        z-index: 1;
+    }
+
+    /* ZARF İÇİNDEKİ KAĞIT - Kapanma Sırası Düzeltildi */
+    .letter {
+        position: absolute;
+        width: 88%; height: 88%;
+        background: #fffdf5;
+        top: 6%; left: 6%;
+        border-radius: 4px;
+        box-shadow: inset 0 0 15px rgba(0,0,0,0.05), 0 2px 10px rgba(0,0,0,0.15);
+        transform: translateZ(0px) translateY(0px);
+        /* Kapanırken (default): Bekleme olmadan anında aşağı iner (0s) */
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+    }
+
+    .envelope-wrapper.open .letter {
+        /* Açılırken: Kapağın açılmasını (0.6s) bekler */
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.6s;
+        transform: translateZ(2px) translateY(-140px);
+        z-index: 4;
+    }
+
+    /* ==================================================
+       BÜYÜYEREK GELEN KAĞIT EKRANI (MODAL)
+       ================================================== */
+    .paper-modal-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease;
+        z-index: 100;
+        perspective: 1200px;
+    }
+
+    .paper-modal-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .big-paper {
+        width: 400px;
+        height: 600px;
+        background: #fffdf5;
+        border-radius: 8px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        transform: scale(0.5) rotateX(0deg) rotateY(0deg);
+        opacity: 0;
+        transform-style: preserve-3d;
+        transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+        cursor: grab;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+        box-sizing: border-box;
+    }
+
+    .paper-modal-overlay.active .big-paper {
+        transform: scale(1) rotateX(0deg) rotateY(0deg); 
+        opacity: 1;
+    }
+
+    .big-paper:active { cursor: grabbing; }
+
+    .big-paper-content {
+        transform: translateZ(20px); 
+        text-align: center;
+        color: #333;
+    }
+</style>
+</head>
+<body>
+
+<!-- Görüntüden Çekilen Çiçekler -->
+<div class="bg-flowers">
+    <div class="flower-img flower-1"></div>
+    <div class="flower-img flower-2"></div>
+    <div class="flower-img flower-3"></div>
+</div>
+
+<!-- Zarf Sahnesi -->
+<div class="scene">
+    <div class="envelope-wrapper" id="envelope">
+        <div class="env-base"></div>
+        <div class="letter"></div>
+        <div class="flap-common env-left"></div>
+        <div class="flap-common env-right"></div>
+        <div class="flap-common env-bottom"></div>
+        <div class="flap-common env-top"></div>
+    </div>
+</div>
+
+<!-- Zarf Açıldığında Çıkan Büyüyen Kağıt Modal'ı -->
+<div class="paper-modal-overlay" id="modalOverlay">
+    <div class="big-paper" id="bigPaper">
+        <div class="big-paper-content">
+            <h1 style="font-family: Georgia, serif; color: #2c3e50;">Senin İçin</h1>
+            <p style="font-size: 16px; color: #555;">Tasarım ve içerikler buraya gelecek...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const envelope = document.getElementById('envelope');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const bigPaper = document.getElementById('bigPaper');
+    
+    let isDragging = false;
+    let dragTarget = null;
+    let mousedownCoords = { x: 0, y: 0 };
+    let previousMousePosition = { x: 0, y: 0 };
+    let lastClickDistance = 0; 
+
+    let envRotation = { x: 15, y: -20 };
+    let paperRotation = { x: 0, y: 0 };
+
+    document.addEventListener('mousedown', (e) => {
+        if (envelope.contains(e.target) && !modalOverlay.classList.contains('active')) {
+            dragTarget = envelope;
+        } else if (bigPaper.contains(e.target) && modalOverlay.classList.contains('active')) {
+            dragTarget = bigPaper;
+        } else {
+            dragTarget = null;
+            mousedownCoords = { x: e.clientX, y: e.clientY };
+            return;
+        }
+
+        isDragging = true;
+        mousedownCoords = { x: e.clientX, y: e.clientY };
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+        
+        if(dragTarget) {
+            dragTarget.style.transition = 'none';
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging || !dragTarget) return;
+        
+        const deltaMove = {
+            x: e.clientX - previousMousePosition.x,
+            y: e.clientY - previousMousePosition.y
+        };
+
+        if (dragTarget === envelope) {
+            envRotation.y += deltaMove.x * 0.4;
+            envRotation.x -= deltaMove.y * 0.4;
+            envelope.style.transform = `rotateX(${envRotation.x}deg) rotateY(${envRotation.y}deg)`;
+        } else if (dragTarget === bigPaper) {
+            paperRotation.y += deltaMove.x * 0.3;
+            paperRotation.x -= deltaMove.y * 0.3;
+            
+            paperRotation.x = Math.max(-45, Math.min(45, paperRotation.x));
+            paperRotation.y = Math.max(-45, Math.min(45, paperRotation.y));
+
+            bigPaper.style.transform = `scale(1) rotateX(${paperRotation.x}deg) rotateY(${paperRotation.y}deg)`;
+        }
+
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+
+    document.addEventListener('mouseup', (e) => {
+        lastClickDistance = Math.hypot(e.clientX - mousedownCoords.x, e.clientY - mousedownCoords.y);
+
+        if (dragTarget === envelope) {
+            envelope.style.transition = 'transform 0.1s ease-out';
+        } else if (dragTarget === bigPaper) {
+            bigPaper.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        }
+        
+        isDragging = false;
+        dragTarget = null;
+    });
+
+    // Zarf Tıklama
+    envelope.addEventListener('click', () => {
+        if (lastClickDistance < 5 && !envelope.classList.contains('open')) {
+            envelope.classList.add('open');
+            
+            setTimeout(() => {
+                modalOverlay.classList.add('active');
+                paperRotation = { x: 0, y: 0 };
+                bigPaper.style.transform = `scale(1) rotateX(0deg) rotateY(0deg)`;
+            }, 1200); 
+        }
+    });
+
+    // Modal Kapatma
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay && lastClickDistance < 5) {
+            modalOverlay.classList.remove('active');
+            
+            setTimeout(() => {
+                envelope.classList.remove('open');
+            }, 500);
+        }
+    });
+</script>
+</body>
+</html>
