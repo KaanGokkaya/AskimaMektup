@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Seni çok seviyorum Aşkım</title>
+<title>5. Ay Hediyesi</title>
 <style>
     body {
         margin: 0;
@@ -29,10 +29,10 @@
         pointer-events: none;
         z-index: 0;
         background-image: url('morcicekler.png');
-        background-repeat: repeat; /* Görseli ardı ardına döşer */
-        background-size: 400px; /* Desenin büyüklüğünü belirler */
-        mix-blend-mode: multiply; /* Pastel maviyle kaynaştırır */
-        opacity: 0.6; /* Göz yormaması için şeffaflık */
+        background-repeat: repeat; 
+        background-size: 400px; 
+        mix-blend-mode: multiply; 
+        opacity: 0.6; 
     }
 
     /* Ana Sahne (Zarf) */
@@ -123,9 +123,7 @@
         z-index: 4;
     }
 
-    /* ==================================================
-       BÜYÜYEREK GELEN KAĞIT EKRANI (MODAL)
-       ================================================== */
+    /* BÜYÜYEREK GELEN KAĞIT EKRANI (MODAL) */
     .paper-modal-overlay {
         position: fixed;
         top: 0; left: 0;
@@ -162,7 +160,7 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 40px;
+        padding: 50px;
         box-sizing: border-box;
     }
 
@@ -173,10 +171,27 @@
 
     .big-paper:active { cursor: grabbing; }
 
+    /* İÇERİK METNİ TASARIMI */
     .big-paper-content {
         transform: translateZ(20px); 
         text-align: center;
-        color: #333;
+        font-style: italic; /* Tüm yazıyı italik yapar */
+    }
+
+    .big-paper-content h1 {
+        font-family: Georgia, serif; 
+        color: #7b1fa2; /* Temaya uygun şık bir mor */
+        font-size: 26px;
+        margin-bottom: 25px;
+        line-height: 1.3;
+    }
+
+    .big-paper-content p {
+        font-family: Georgia, serif; 
+        font-size: 18px; 
+        color: #444;
+        line-height: 1.8; /* Satır aralığını açarak mektup havası verdik */
+        margin: 0;
     }
 </style>
 </head>
@@ -201,8 +216,8 @@
 <div class="paper-modal-overlay" id="modalOverlay">
     <div class="big-paper" id="bigPaper">
         <div class="big-paper-content">
-            <h1 style="font-family: Georgia, serif; color: #2c3e50;">Senin İçin</h1>
-            <p style="font-size: 16px; color: #555;">Tasarım ve içerikler buraya gelecek...</p>
+            <h1>Çooook sevdiğim Aşkıma,</h1>
+            <p>Aşkım uzak da olsak aramızda mesafeler de olsa sana bir hediye hazırlamak istedim. Yanında olup fiziksel olarak vermek isterdim ama çok mümkün değil gibi. Nice aylar yıllar saymak nasip olur inşallah aşkımm. 5. ayımız kutlu olsunn. Seni çook seviyorum.</p>
         </div>
     </div>
 </div>
